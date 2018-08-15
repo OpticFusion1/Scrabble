@@ -1,0 +1,124 @@
+/* GameWord.java
+ * Austin Teshuba
+ * This basically lets you play scrabble
+ * Fields: contents - private and only accessible through initializer
+ * Initializers: allows you to input string. auto converted to uppercase
+ * constants: wordBonuses - the places of double and triple words. stored in 2d array.
+ * letterBonuses - the places of double and triple letters. stored in 2d array
+ * RIGHT - the right direction is represented as 1
+ * DOWN - the down direction is represented as 2
+ * letterPoints - the points of each letter stored in alphabetical order
+ * Methods: reverse: reverses the word and returns it
+ * anagram: checks if the word passed in is an anagram of the game word. Word passes in can be game word or string
+ * permutations: returns all permutations of the word that can be used. 
+ */
+import java.util.*;//import java utilities
+public class GameWord {
+	private String contents;//contents field. initialized by initializer
+	public GameWord (String content) {
+		contents = content.toUpperCase();//makes the inputted string uppercase
+	}
+	private static final int RIGHT = 1;//right constant
+	private static final int DOWN = 2;//down constant
+	private static final int[][]wordBonuses = //word bonuses stored in array. multipliers inside (multiply score by number)
+		{
+			{3,1,1,1,1,1,1,3,1,1,1,1,1,1,3},
+			{1,2,1,1,1,1,1,1,1,1,1,1,1,2,1}, 
+			{1,1,2,1,1,1,1,1,1,1,1,1,2,1,1},
+			{1,1,1,2,1,1,1,1,1,1,1,2,1,1,1},
+			{1,1,1,1,2,1,1,1,1,1,2,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+			{3,1,1,1,1,1,1,2,1,1,1,1,1,1,3},
+			{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,2,1,1,1,1,1,2,1,1,1,1},
+			{1,1,1,2,1,1,1,1,1,1,1,2,1,1,1},
+			{1,1,2,1,1,1,1,1,1,1,1,1,2,1,1},
+			{1,2,1,1,1,1,1,1,1,1,1,1,1,2,1},
+			{3,1,1,1,1,1,1,3,1,1,1,1,1,1,3}
+		};
+	
+	private static final int[][]letterBonuses = //letter bonuses stored in array. multipliers inside. 
+		{{1,1,1,2,1,1,1,1,1,1,1,2,1,1,1},
+	     {1,1,1,1,1,3,1,1,1,3,1,1,1,1,1},
+	     {1,1,1,1,1,1,2,1,2,1,1,1,1,1,1},
+	     {2,1,1,1,1,1,1,2,1,1,1,1,1,1,2},
+	     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+	     {1,3,1,1,1,3,1,1,1,3,1,1,1,3,1},
+	     {1,1,2,1,1,1,2,1,2,1,1,1,2,1,1},
+	     {1,1,1,2,1,1,1,1,1,1,1,2,1,1,1},
+	     {1,1,2,1,1,1,2,1,2,1,1,1,2,1,1},
+	     {1,3,1,1,1,3,1,1,1,3,1,1,1,3,1},
+	     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+	     {2,1,1,1,1,1,1,2,1,1,1,1,1,1,2},
+	     {1,1,1,1,1,1,2,1,2,1,1,1,1,1,1},
+	     {1,1,1,1,1,3,1,1,1,3,1,1,1,1,1},
+	     {1,1,1,2,1,1,1,1,1,1,1,2,1,1,1}
+		};
+	
+	private static final int[] letterPoints = {1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10};//sorted alphabetically of all the letter points
+	
+	public String reverse() {//reverses the contents via string builder
+		String c = contents.substring(0);//make copy of string
+		return new StringBuilder(c).reverse().toString();//reverse and return copy
+	}
+	
+	public boolean anagram(String otherWord) {//checks if the word is an anagram
+		char[] content = contents.toUpperCase().toCharArray();//make the contents and the other word into a char array
+		char[] other = otherWord.toUpperCase().toCharArray();
+		
+		Arrays.sort(content);//sort arrays
+		Arrays.sort(other);
+		
+		return Arrays.equals(content, other);//if the arrays are the same return true. otherwise return false
+		
+	}
+	public boolean anagram(GameWord otherWord) {//overloaded version. grab contents from the anagram 
+		return anagram(otherWord.contents);
+	}
+	
+	public int pointValue(int x, int y, int direction) {//gets pointvalue of word based on direction and the xy
+		
+		int score = 0;//starting score is 0 and the starting multiplier is 1
+		int multiplier = 1;
+		char[] content = contents.toUpperCase().toCharArray();//change content to uppercase and make it a char array
+		if (direction==RIGHT) {//if the direction is right
+			if (content.length + x <=15) {//if the word will fit on the board
+				for (int t = 0; t<content.length; t++) {//iterate through word
+					score += letterPoints[(int)(content[t])-65] * letterBonuses[y][x+t];//add to score by checking for letter score and bojnuses
+					multiplier = multiplier * wordBonuses[y][x+t];//multiplier is multiplied to based on word bonuses
+				}
+			}
+		} else if (direction==DOWN) {
+			if (content.length + y <= 15) {//if it fits on board
+				for (int t = 0; t<content.length; t++) {
+					score += letterPoints[(int)(content[t])-65] * letterBonuses[y+t][x];//add to score based off letter score and bonuses
+					multiplier = multiplier * wordBonuses[y+t][x];//multiplier is multiplied to based on word bonuses
+				}
+			}
+		}
+		return score*multiplier;//return the score with all word bonuses applied
+		
+	}
+	private ArrayList<String> possibilities = new ArrayList<String>();//global possibilities which connects to permutations and the recursive version of permutations
+	public ArrayList<String> permutations () {//checks all the permutations of the gameword
+		possibilities = new ArrayList<String>();//clear global var
+		permute("", contents);//link to recursive function
+		return possibilities;//return the new possibilities array
+	}
+	private void permute (String current, String remaining) {
+		if (remaining.length()==0) {//if there is nothing left, add to arraylist
+			possibilities.add(current);
+		} else {
+			for (int t=0; t<remaining.length(); t++) {
+				permute(current + remaining.charAt(t), remaining.substring(0,t) + remaining.substring(t+1));//go through possibilities recursviely letter by letter
+			}
+		}
+	}
+	
+	public String toString () {//return contents as a string
+		return contents;
+	}
+}
+
